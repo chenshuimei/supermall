@@ -45,7 +45,7 @@ export default {
 <style  scoped>
     .tab-bar-item {
         flex: 1;
-        background-color:#5754542e;
+        /* background-color:#5754542e; */
         cursor: pointer;
     }  
     .tab-bar-item img {
