@@ -2,113 +2,14 @@
 <template>
    <div id="home">
       <nav-tab-bar class="home-nav"><div slot="center">购物街</div></nav-tab-bar>
-      <home-swiper :banners="banners"/>
-      <recommend-view :recommend="recommend"></recommend-view>
-      <feature-view/>
-      <tab-control :titles="['流行','新品','精选']" class="tab-control" @currentClick="currentVaule"/>
-      <goods-list :goods-list="GoodsListData"></goods-list>
-      <ul>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-         <li></li>
-      </ul>
+      <scroll class="content" ref="scroll" :probe-type="3" @scrollPosition="positionData">
+         <home-swiper :banners="banners"/>
+         <recommend-view :recommend="recommend"></recommend-view>
+         <feature-view/>
+         <tab-control :titles="['流行','新品','精选']" class="tab-control" @currentClick="currentVaule"/>
+         <goods-list :goods-list="GoodsListData"></goods-list>
+      </scroll>
+      <back-top @click.native="clickTop" v-show="isShow"/>
    </div>
 </template>
 
@@ -116,12 +17,17 @@
 import HomeSwiper from './childComps/HomeSwiper'
 import RecommendView from './childComps/RecommendViews'
 import FeatureView from './childComps/FeatureView'
+
 import TabControl from 'components/content/tabControl/TabControl'
 import GoodsList from 'components/content/Goods/GoodsList'
+import Scroll from 'components/common/scroll/Scroll' 
+import BackTop from 'components/content/backTop/BackTop'
 
 import NavTabBar from 'components/common/navtabbar/NavTabBar'
 
 import {getHomeMulitdata, getHomeGoods} from 'network/home'
+
+
 
 export default {
    name: "home",
@@ -131,7 +37,9 @@ export default {
       RecommendView,
       FeatureView,
       TabControl,
-      GoodsList
+      GoodsList,
+      Scroll,
+      BackTop
    },
    data () {
       return {
@@ -144,7 +52,8 @@ export default {
             'new': {page: 0, list: []},
             'sell': {page: 0, list: []}
          },
-         currentType : 'pop'
+         currentType : 'pop',
+         isShow: false
       }
       
    },
@@ -183,6 +92,24 @@ export default {
       },
 
       /**
+       * 点击回到顶部
+       */
+      clickTop() {
+         // this.$refs.scroll.scroll.scrollBackTop(0, 0)
+         this.$refs.scroll.scrollBackTop(0, 0)
+      },
+
+      /**
+       * 监听产品信息向下滚到1000时，backTop按钮才显示
+       */
+      positionData(position) {
+         this.isShow = (-position.y) > 1000
+      },
+
+
+
+
+      /**
        * 网路请求相关的方法
        */
       getHomeMulitdata() {
@@ -197,7 +124,7 @@ export default {
       getHomeGoods(type) {
          const page = this.goods[type].page + 1;
          getHomeGoods(type, page).then(res => {
-            console.log(res);
+            // console.log(res);
             this.goods[type].list.push(...res.data.list)
             this.goods[type].page += 1
             
@@ -211,6 +138,8 @@ export default {
 <style  scoped>
    #home{
       padding-top: 44px;
+      height: 100vh;
+      position: relative;
    }
    .home-nav{
       background-color: var(--color-tint);
@@ -226,5 +155,12 @@ export default {
       top: 44px;
       background: #fff;
       z-index: 9;
+   }
+   .content{
+      position: absolute;
+      top: 44px;
+      bottom: 49px;
+      left: 0;
+      right: 0;
    }
 </style>
