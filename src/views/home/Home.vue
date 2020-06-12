@@ -2,7 +2,12 @@
 <template>
    <div id="home">
       <nav-tab-bar class="home-nav"><div slot="center">购物街</div></nav-tab-bar>
-      <scroll class="content" ref="scroll" :probe-type="3" @scrollPosition="positionData">
+      <scroll class="content" 
+               ref="scroll" 
+               :probe-type="3" 
+               @scrollPosition="positionData" 
+               :pull-upload="true"
+               @pullingUp="loadMore">
          <home-swiper :banners="banners"/>
          <recommend-view :recommend="recommend"></recommend-view>
          <feature-view/>
@@ -65,7 +70,13 @@ export default {
       this.getHomeGoods('pop');
       this.getHomeGoods('new');
       this.getHomeGoods('sell');
-
+   },
+   mounted() {
+      //监听图片加载完成
+      const refresh = this.debounce(this.$refs.scroll.refresh, 50)
+      this.$bus.$on('imageLoad', () => {
+         refresh()
+      })
    },
    computed: {
       GoodsListData() {
@@ -76,6 +87,17 @@ export default {
       /**
        * 事件监听相关的方法
        */
+
+      //防抖动,目的是当所有产品图片加载完之后才执行refresh。这样就不会频繁执行refresh()函数，提高性能
+      debounce(func, delay) {
+         let timer = null
+         return function (...args) {
+            if (timer) clearTimeout(timer)
+            timer = setTimeout(() => {
+               func.apply(this, args)
+            }, delay)
+         }
+      },
       currentVaule(index) {
          // console.log(index);
          switch (index) {
@@ -104,6 +126,14 @@ export default {
        */
       positionData(position) {
          this.isShow = (-position.y) > 1000
+      },
+      /**
+       * 监听上拉加载更多
+       */
+      loadMore() {
+         // console.log('上拉加载');
+         this.getHomeGoods(this.currentType)
+         this.$refs.scroll.finishPullUp()
       },
 
 
